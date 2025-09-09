@@ -1,0 +1,16 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: impulse Eda Transaction Extension
+Bundle-SymbolicName: de.toem.impulse.extension.eda.transaction;singleton:=true
+Bundle-Version: 3.0.3
+Require-Bundle: org.eclipse.osgi,
+ de.toem.toolkits.general;bundle-version="3.0.3",
+ de.toem.impulse.base;bundle-version="3.0.3",
+ de.toem.impulse.ui;bundle-version="3.0.3",
+ de.toem.toolkits.3rdparty;bundle-version="3.0.3"
+Bundle-ActivationPolicy: lazy
+Bundle-RequiredExecutionEnvironment: JavaSE-1.8
+Bundle-Vendor: toem.de
+Bundle-Localization: i18n/i18n
+Bundle-ClassPath: .
+ 

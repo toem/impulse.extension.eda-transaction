@@ -1,0 +1,172 @@
+//-recjx 
+// Example Impulse Record Producer Script for AXI3 Bus Signals
+// This script demonstrates how to use the Impulse API to generate a record with AXI3 bus signals
+// representing write and read transactions.
+// It shows different accesses: a write transaction and a read transaction.
+//
+// Provided variables:
+//   - producer: ISingleDomainRecordProducer
+//   - file:     java.io.File (executed recJs file)
+//   - p:        IProgress (progress control)
+//   - console:  IConsoleStream (console output)
+
+// Init the record with name and time base (nanoseconds)
+producer.initRecord("AXI3 Bus Example",TimeBase.ns);
+
+// Create a scope and add AXI3 signals
+var scope = producer.addScope(null, "AXI3 Bus");
+var clk = producer.addSignal(scope, "ACLK", null,null, ISample.DATA_TYPE_LOGIC,1,ISample.FORMAT_DEFAULT);
+var rst = producer.addSignal(scope, "ARESETn", null,null, ISample.DATA_TYPE_LOGIC,1,ISample.FORMAT_DEFAULT);
+
+// Write Address Channel
+var awaddr = producer.addSignal(scope, "AWADDR", null,null, ISample.DATA_TYPE_LOGIC,32,ISample.FORMAT_DEFAULT);
+var awvalid = producer.addSignal(scope, "AWVALID", null,null, ISample.DATA_TYPE_LOGIC,1,ISample.FORMAT_DEFAULT);
+var awready = producer.addSignal(scope, "AWREADY", null,null, ISample.DATA_TYPE_LOGIC,1,ISample.FORMAT_DEFAULT);
+
+// Write Data Channel
+var wdata = producer.addSignal(scope, "WDATA", null,null, ISample.DATA_TYPE_LOGIC,32,ISample.FORMAT_DEFAULT);
+var wvalid = producer.addSignal(scope, "WVALID", null,null, ISample.DATA_TYPE_LOGIC,1,ISample.FORMAT_DEFAULT);
+var wready = producer.addSignal(scope, "WREADY", null,null, ISample.DATA_TYPE_LOGIC,1,ISample.FORMAT_DEFAULT);
+
+// Write Response Channel
+var bresp = producer.addSignal(scope, "BRESP", null,null, ISample.DATA_TYPE_LOGIC,2,ISample.FORMAT_DEFAULT);
+var bvalid = producer.addSignal(scope, "BVALID", null,null, ISample.DATA_TYPE_LOGIC,1,ISample.FORMAT_DEFAULT);
+var bready = producer.addSignal(scope, "BREADY", null,null, ISample.DATA_TYPE_LOGIC,1,ISample.FORMAT_DEFAULT);
+
+// Read Address Channel
+var araddr = producer.addSignal(scope, "ARADDR", null,null, ISample.DATA_TYPE_LOGIC,32,ISample.FORMAT_DEFAULT);
+var arvalid = producer.addSignal(scope, "ARVALID", null,null, ISample.DATA_TYPE_LOGIC,1,ISample.FORMAT_DEFAULT);
+var arready = producer.addSignal(scope, "ARREADY", null,null, ISample.DATA_TYPE_LOGIC,1,ISample.FORMAT_DEFAULT);
+
+// Read Data Channel
+var rdata = producer.addSignal(scope, "RDATA", null,null, ISample.DATA_TYPE_LOGIC,32,ISample.FORMAT_DEFAULT);
+var rresp = producer.addSignal(scope, "RRESP", null,null, ISample.DATA_TYPE_LOGIC,2,ISample.FORMAT_DEFAULT);
+var rvalid = producer.addSignal(scope, "RVALID", null,null, ISample.DATA_TYPE_LOGIC,1,ISample.FORMAT_DEFAULT);
+var rready = producer.addSignal(scope, "RREADY", null,null, ISample.DATA_TYPE_LOGIC,1,ISample.FORMAT_DEFAULT);
+
+// Start writing samples at 0 ns
+var t = 0l;
+var MAX_T = 2000l;
+producer.open(t);
+
+// Initialize all signals to 0 at t=0
+producer.getWriter(awaddr).write(0l, false, Logic.valueOf(0l));
+producer.getWriter(awvalid).write(0l, false, Logic.valueOf(false));
+producer.getWriter(awready).write(0l, false, Logic.valueOf(false));
+producer.getWriter(wdata).write(0l, false, Logic.valueOf(0l));
+producer.getWriter(wvalid).write(0l, false, Logic.valueOf(false));
+producer.getWriter(wready).write(0l, false, Logic.valueOf(false));
+producer.getWriter(bresp).write(0l, false, Logic.valueOf(0l));
+producer.getWriter(bvalid).write(0l, false, Logic.valueOf(false));
+producer.getWriter(bready).write(0l, false, Logic.valueOf(false));
+producer.getWriter(araddr).write(0l, false, Logic.valueOf(0l));
+producer.getWriter(arvalid).write(0l, false, Logic.valueOf(false));
+producer.getWriter(arready).write(0l, false, Logic.valueOf(false));
+producer.getWriter(rdata).write(0l, false, Logic.valueOf(0l));
+producer.getWriter(rresp).write(0l, false, Logic.valueOf(0l));
+producer.getWriter(rvalid).write(0l, false, Logic.valueOf(false));
+producer.getWriter(rready).write(0l, false, Logic.valueOf(false));
+producer.getWriter(rst).write(0l, false, Logic.valueOf(true)); // Reset active low, so 1
+
+// Generate clock signal: toggles every 100 ns, written every 50 ns
+var writer = producer.getWriter(clk);
+t = 0l;
+while (t < MAX_T){
+     writer.write(t, false, Logic.valueOf(t % 100 == 0));
+     t += 50;
+}
+
+// Reset deassert at t=50
+producer.getWriter(rst).write(50l, false, Logic.valueOf(true));
+
+// Write Transaction 1: Write to address 0x1000, data 0x12345678
+// AW phase
+producer.getWriter(awaddr).write(100l, false, Logic.valueOf(0x1000l));
+producer.getWriter(awvalid).write(100l, false, Logic.valueOf(true));
+// Slave ready at 150
+producer.getWriter(awready).write(150l, false, Logic.valueOf(true));
+// W phase
+producer.getWriter(wdata).write(200l, false, Logic.valueOf(0x12345678l));
+producer.getWriter(wvalid).write(200l, false, Logic.valueOf(true));
+// Slave ready at 250
+producer.getWriter(wready).write(250l, false, Logic.valueOf(true));
+// B phase
+producer.getWriter(bresp).write(300l, false, Logic.valueOf(0l)); // OKAY
+producer.getWriter(bvalid).write(300l, false, Logic.valueOf(true));
+// Master ready at 350
+producer.getWriter(bready).write(350l, false, Logic.valueOf(true));
+
+// End write transaction signals
+producer.getWriter(awvalid).write(400l, false, Logic.valueOf(false));
+producer.getWriter(awready).write(400l, false, Logic.valueOf(false));
+producer.getWriter(wvalid).write(400l, false, Logic.valueOf(false));
+producer.getWriter(wready).write(400l, false, Logic.valueOf(false));
+producer.getWriter(bvalid).write(400l, false, Logic.valueOf(false));
+producer.getWriter(bready).write(400l, false, Logic.valueOf(false));
+
+// Read Transaction 1: Read from address 0x2000
+// AR phase
+producer.getWriter(araddr).write(500l, false, Logic.valueOf(0x2000l));
+producer.getWriter(arvalid).write(500l, false, Logic.valueOf(true));
+// Slave ready at 550
+producer.getWriter(arready).write(550l, false, Logic.valueOf(true));
+// R phase
+producer.getWriter(rdata).write(600l, false, Logic.valueOf(0x87654321l));
+producer.getWriter(rresp).write(600l, false, Logic.valueOf(0l)); // OKAY
+producer.getWriter(rvalid).write(600l, false, Logic.valueOf(true));
+// Master ready at 650
+producer.getWriter(rready).write(650l, false, Logic.valueOf(true));
+
+// End read transaction signals
+producer.getWriter(arvalid).write(700l, false, Logic.valueOf(false));
+producer.getWriter(arready).write(700l, false, Logic.valueOf(false));
+producer.getWriter(rvalid).write(700l, false, Logic.valueOf(false));
+producer.getWriter(rready).write(700l, false, Logic.valueOf(false));
+
+// Write Transaction 2: Write to address 0x3000, data 0xABCDEF00
+// AW phase
+producer.getWriter(awaddr).write(800l, false, Logic.valueOf(0x3000l));
+producer.getWriter(awvalid).write(800l, false, Logic.valueOf(true));
+// Slave ready at 850
+producer.getWriter(awready).write(850l, false, Logic.valueOf(true));
+// W phase
+producer.getWriter(wdata).write(900l, false, Logic.valueOf(0xABCDEF00l));
+producer.getWriter(wvalid).write(900l, false, Logic.valueOf(true));
+// Slave ready at 950
+producer.getWriter(wready).write(950l, false, Logic.valueOf(true));
+// B phase
+producer.getWriter(bresp).write(1000l, false, Logic.valueOf(1l)); // EXOKAY
+producer.getWriter(bvalid).write(1000l, false, Logic.valueOf(true));
+// Master ready at 1050
+producer.getWriter(bready).write(1050l, false, Logic.valueOf(true));
+
+// End write transaction 2
+producer.getWriter(awvalid).write(1100l, false, Logic.valueOf(false));
+producer.getWriter(awready).write(1100l, false, Logic.valueOf(false));
+producer.getWriter(wvalid).write(1100l, false, Logic.valueOf(false));
+producer.getWriter(wready).write(1100l, false, Logic.valueOf(false));
+producer.getWriter(bvalid).write(1100l, false, Logic.valueOf(false));
+producer.getWriter(bready).write(1100l, false, Logic.valueOf(false));
+
+// Read Transaction 2: Read from address 0x4000
+// AR phase
+producer.getWriter(araddr).write(1200l, false, Logic.valueOf(0x4000l));
+producer.getWriter(arvalid).write(1200l, false, Logic.valueOf(true));
+// Slave ready at 1250
+producer.getWriter(arready).write(1250l, false, Logic.valueOf(true));
+// R phase
+producer.getWriter(rdata).write(1300l, false, Logic.valueOf(0xFEDCBA98l));
+producer.getWriter(rresp).write(1300l, false, Logic.valueOf(0l)); // OKAY
+producer.getWriter(rvalid).write(1300l, false, Logic.valueOf(true));
+// Master ready at 1350
+producer.getWriter(rready).write(1350l, false, Logic.valueOf(true));
+
+// End read transaction 2
+producer.getWriter(arvalid).write(1400l, false, Logic.valueOf(false));
+producer.getWriter(arready).write(1400l, false, Logic.valueOf(false));
+producer.getWriter(rvalid).write(1400l, false, Logic.valueOf(false));
+producer.getWriter(rready).write(1400l, false, Logic.valueOf(false));
+
+// Close the record at MAX_T
+producer.close(MAX_T);
+
