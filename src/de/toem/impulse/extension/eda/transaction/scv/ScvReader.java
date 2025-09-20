@@ -1,1 +1,1 @@
-/home/thomas/Workspaces/impulse/de.toem.impulse.extension.eda.transactions/scv/ScvReader.java
+/home/thomas/Workspaces/impulse/de.toem.impulse.extension.eda-transaction/scv/ScvReader.java

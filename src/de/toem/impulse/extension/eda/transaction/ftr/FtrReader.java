@@ -1,1 +1,1 @@
-/home/thomas/Workspaces/impulse/de.toem.impulse.extension.eda.transactions/ftr/FtrReader.java
+/home/thomas/Workspaces/impulse/de.toem.impulse.extension.eda-transaction/ftr/FtrReader.java

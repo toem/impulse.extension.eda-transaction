@@ -1,0 +1,1 @@
+/home/thomas/Workspaces/impulse/de.toem.impulse.extension.eda-transaction/ftr/ftr-reader.md

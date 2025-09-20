@@ -6,14 +6,8 @@ description: "Provides an extension for the impulse framework to import, analyze
 category: "impulse-extension"
 tags:
   - extension
-  - EDA
-  - impulse
-  - transaction
-  - pin-level
-  - protocol
-  - analysis
-  - visualization
-docID: -1
+  - eda
+docID: 1221
 --->
 
 # EDA Transaction Extension

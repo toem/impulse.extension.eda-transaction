@@ -1,7 +1,7 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: impulse Eda Transaction Extension
-Bundle-SymbolicName: de.toem.impulse.extension.eda.transaction;singleton:=true
+Bundle-SymbolicName: de.toem.impulse.extension.eda-transaction;singleton:=true
 Bundle-Version: 3.0.3
 Require-Bundle: org.eclipse.osgi,
  de.toem.toolkits.general;bundle-version="3.0.3",
