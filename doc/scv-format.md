@@ -1,1 +1,0 @@
-/home/thomas/Workspaces/impulse/de.toem.impulse.extension.eda-transaction/scv/scv-format.md

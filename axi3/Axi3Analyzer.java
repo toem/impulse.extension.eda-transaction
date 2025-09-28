@@ -23,6 +23,7 @@ import de.toem.impulse.usecase.eda.transaction.ITransaction.PhasesListener;
 import de.toem.toolkits.core.Utils;
 import de.toem.toolkits.pattern.bundles.Bundles;
 import de.toem.toolkits.pattern.element.ICell;
+import de.toem.toolkits.pattern.ide.IConsoleStream;
 import de.toem.toolkits.pattern.registry.RegistryAnnotation;
 import de.toem.toolkits.pattern.threading.IProgress;
 import de.toem.toolkits.utils.text.MultilineText;
@@ -246,7 +247,7 @@ public class Axi3Analyzer extends AbstractTransactionAnalyzer {
     // Find phases
     // ========================================================================================================================
     @Override
-    public boolean findPhases(IProgress p, ISamplePointerIterator iter, Map<Object,ISamplePointer> pointers, PhasesListener<Pending> listener, Map<Long, Pending> pending) {
+    public boolean findPhases(IProgress p, IConsoleStream console, ISamplePointerIterator iter, Map<Object,ISamplePointer> pointers, PhasesListener<Pending> listener, Map<Long, Pending> pending) {
         
         // get first value of map that is != null
         ISamplePointer pointer = pointers != null ? pointers.values().stream().filter(pn -> pn != null).findFirst().orElse(null) : null;

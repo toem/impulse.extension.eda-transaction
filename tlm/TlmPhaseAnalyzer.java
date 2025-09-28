@@ -25,6 +25,7 @@ import de.toem.impulse.usecase.eda.transaction.ITransaction.PhasesListener;
 import de.toem.toolkits.core.Utils;
 import de.toem.toolkits.pattern.bundles.Bundles;
 import de.toem.toolkits.pattern.element.ICell;
+import de.toem.toolkits.pattern.ide.IConsoleStream;
 import de.toem.toolkits.pattern.registry.RegistryAnnotation;
 import de.toem.toolkits.pattern.threading.IProgress;
 import de.toem.toolkits.utils.text.MultilineText;
@@ -224,9 +225,6 @@ public class TlmPhaseAnalyzer extends AbstractTransactionAnalyzer  {
      * This method analyzes transaction samples to identify TLM phase transitions, correlate requests and responses
      * using transaction UIDs, and extract protocol-specific attributes. It handles both forward and return path phases,
      * supports partial transactions, and applies delay compensation.
-     *
-     * @param p
-     *            Progress indicator for long-running operations
      * @param iter
      *            Iterator over sample pointers
      * @param pointers
@@ -235,10 +233,15 @@ public class TlmPhaseAnalyzer extends AbstractTransactionAnalyzer  {
      *            Listener for phase events
      * @param pending
      *            Map of pending transactions by UID
+     * @param p
+     *            Progress indicator for long-running operations
+     * @param console
+     *            Console stream
+     *
      * @return true if phases were successfully found and processed
      */
     @Override
-    public boolean findPhases(IProgress p, ISamplePointerIterator iter, Map<Object,ISamplePointer> pointers, PhasesListener<Pending> listener, Map<Long, Pending> pending) {
+    public boolean findPhases(IProgress p, IConsoleStream console, ISamplePointerIterator iter, Map<Object,ISamplePointer> pointers, PhasesListener<Pending> listener, Map<Long, Pending> pending) {
         
         // get first value of map that is != null
         ISamplePointer pointer = pointers != null ? pointers.values().stream().filter(pn -> pn != null).findFirst().orElse(null) : null;
@@ -296,6 +299,7 @@ public class TlmPhaseAnalyzer extends AbstractTransactionAnalyzer  {
                     member_cache = pointer.getMemberDescriptor("trans.ace.cache");
                     member_prot = pointer.getMemberDescriptor("trans.ace.prot");
                 } else {
+                    console.info("Could not identify type");   
                 }
             }
         }
@@ -330,13 +334,13 @@ public class TlmPhaseAnalyzer extends AbstractTransactionAnalyzer  {
                     int burst = sample.intValueOf(member_burst);
                     int cache = sample.intValueOf(member_cache);
                     int prot = sample.intValueOf(member_prot);
-                    beginReq(current, uid, false, 0, sample, Utils.equals(enum_tlm_phase_ret_end_req, tlm_phase_ret), pending, cmd, address, dataLength, /*additional*/burst, cache, prot);
+                    listener.beginReq(current, uid, false, 0, sample, Utils.equals(enum_tlm_phase_ret_end_req, tlm_phase_ret), pending, cmd, address, dataLength, /*additional*/burst, cache, prot);
                 } else if (Utils.equals(enum_tlm_phase_end_req, tlm_phase)) {
-                    endReq(current, uid, sample, pending);
+                    listener.endReq(current, uid, sample, pending);
                 } else if (Utils.equals(enum_tlm_phase_begin_resp, tlm_phase)) {
-                    beginResp(current, uid, false, 0, sample, Utils.equals(enum_tlm_phase_ret_end_resp, tlm_phase_ret), pending);
+                    listener.beginResp(current, uid, false, 0, sample, Utils.equals(enum_tlm_phase_ret_end_resp, tlm_phase_ret), pending);
                 } else if (Utils.equals(enum_tlm_phase_end_resp, tlm_phase)) {
-                    endResp(current, uid, sample, pending);
+                    listener.endResp(current, uid, sample, pending);
                 } else if (Utils.equals(enum_tlm_phase_begin_partial_req, tlm_phase)) {
                     String cmd = sample.formatOf(member_cmd,ISample.FORMAT_LABEL);
                     long address = sample.longValueOf(member_address);
@@ -344,13 +348,13 @@ public class TlmPhaseAnalyzer extends AbstractTransactionAnalyzer  {
                     int burst = sample.intValueOf(member_burst);
                     int cache = sample.intValueOf(member_cache);
                     int prot = sample.intValueOf(member_prot);
-                    beginReq(current, uid, true, 0, sample, Utils.equals(enum_tlm_phase_ret_end_partial_req, tlm_phase_ret), pending, cmd, address, dataLength, /*additional*/burst, cache, prot);
+                    listener.beginReq(current, uid, true, 0, sample, Utils.equals(enum_tlm_phase_ret_end_partial_req, tlm_phase_ret), pending, cmd, address, dataLength, /*additional*/burst, cache, prot);
                 } else if (Utils.equals(enum_tlm_phase_end_partial_req, tlm_phase)) {
-                    endReq(current, uid, sample, pending);
+                    listener.endReq(current, uid, sample, pending);
                 } else if (Utils.equals(enum_tlm_phase_begin_partial_resp, tlm_phase)) {
-                    beginResp(current, uid, true, 0, sample, Utils.equals(enum_tlm_phase_ret_end_partial_resp, tlm_phase_ret), pending);
+                    listener.beginResp(current, uid, true, 0, sample, Utils.equals(enum_tlm_phase_ret_end_partial_resp, tlm_phase_ret), pending);
                 } else if (Utils.equals(enum_tlm_phase_end_partial_resp, tlm_phase)) {
-                    endResp(current, uid, sample, pending);
+                    listener.endResp(current, uid, sample, pending);
                 }
             }
         }
